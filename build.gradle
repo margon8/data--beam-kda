@@ -1,0 +1,76 @@
+plugins {
+    id 'idea'
+
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+    id 'application'
+
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
+}
+
+group 'eu.marcgonzalez'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+ext.apacheBeamVersion = '2.15.0'
+ext.apacheSparkVersion = '2.4.4'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    shadow "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
+    shadow "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
+    shadow "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
+    shadow "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    compile "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
+    compile "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
+    compile "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
+    compile "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+
+    //runtime "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
+    runtime "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
+    runtime "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
+    runtime "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
+    runtime "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    runtime "org.slf4j:slf4j-api:1.+"
+    runtime "org.slf4j:slf4j-jdk14:1.+"
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+mainClassName = 'samples.quickstart.WordCountKotlin'
+
+shadowJar {
+    mergeServiceFiles()
+
+    baseName = 'WordCount'  // Name of the fat jar file.
+    classifier = null       // Set to null, otherwise 'shadow' appends a '-all' to the jar file name.
+    manifest {
+        attributes('Main-Class': mainClassName)  // Specify where the main class resides.
+    }
+    zip64 true
+
+
+
+}
+
+run {
+    if (project.hasProperty('args')) {
+        args project.args.split('\\s+')
+    }
+}

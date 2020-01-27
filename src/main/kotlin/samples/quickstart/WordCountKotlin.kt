@@ -19,7 +19,7 @@ object WordCountKotlin {
     fun main(args: Array<String>) {
 
         val inputsDir = "data/*"
-        val outputsPrefix = "outputs/part"
+        val outputsPrefix = "outputs-kotlin/part"
         val options = PipelineOptionsFactory.fromArgs(*args).create()
 
         val pipeline = Pipeline.create(options)

@@ -12,9 +12,13 @@ group 'eu.marcgonzalez'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
-ext.apacheBeamVersion = '2.17.0'
+ext.apacheBeamVersion = '2.21.0'
+ext.flinkVersion = "1.8"
+ext.kdaVersion = "1.1.0"
 ext.apacheSparkVersion = '2.4.4'
 ext.jackson2Version = '2.6.7'
+ext.sl4jVersion = "1.7.25"
+ext.awsJavaSDKVersion = "2.13.54"
 
 repositories {
     mavenCentral()
@@ -24,23 +28,42 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     shadow "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
-    //shadow "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
-    //shadow "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
-    //shadow "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
-    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    shadow "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
+    shadow "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+
+    shadow("org.apache.beam:beam-sdks-java-io-kinesis:$apacheBeamVersion") {
+        exclude group: 'org.apacahe.beam.sdk.io.gcp.bigquery', module: 'BigQueryUtils'
+    }
+    shadow "org.apache.beam:beam-sdks-java-io-amazon-web-services:$apacheBeamVersion"
+
+    shadow "com.amazonaws:aws-kinesisanalytics-runtime:${kdaVersion}"
+
+
 
     compile "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
-    //compile "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
-    //compile "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
-    //compile "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
+    compile "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+    compile("org.apache.beam:beam-sdks-java-io-kinesis:$apacheBeamVersion") {
+        exclude group: 'org.apacahe.beam.sdk.io.gcp.bigquery', module: 'BigQueryUtils'
+    }
+    compile "org.apache.beam:beam-sdks-java-io-amazon-web-services:$apacheBeamVersion"
+
+    compile "com.amazonaws:aws-kinesisanalytics-runtime:${kdaVersion}"
+
+    compile "com.google.code.gson:gson:2.8.6"
+    compile "software.amazon.awssdk:cloudwatch:$awsJavaSDKVersion"
+    compile "software.amazon.awssdk:s3:$awsJavaSDKVersion"
+    compile "com.opencsv:opencsv:4.6"
+    compile "org.slf4j:slf4j-api:${sl4jVersion}"
 
 
+    runtime "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
     runtime "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
-    //runtime "org.apache.beam:beam-runners-spark:$apacheBeamVersion"
-    //runtime "org.apache.spark:spark-core_2.11:$apacheSparkVersion"
-    //runtime "org.apache.spark:spark-streaming_2.11:$apacheSparkVersion"
-    runtime "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    runtime "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+    runtime "org.slf4j:slf4j-jdk14:${sl4jVersion}"
+
+
+
     runtime "org.slf4j:slf4j-api:1.+"
     runtime "org.slf4j:slf4j-jdk14:1.+"
 

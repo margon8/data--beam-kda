@@ -1,2 +1,2 @@
-rootProject.name = 'beam-kotlin-gradle'
+rootProject.name = 'amazon-kinesis-analytics-beam-taxi-consumer'
 

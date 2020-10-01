@@ -8,15 +8,15 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.4'
 }
 
-group 'eu.marcgonzalez'
-version '1.0-SNAPSHOT'
+group 'com.amazonaws.samples.beam.taxi.count'
+version '0.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 ext.apacheBeamVersion = '2.21.0'
 ext.flinkVersion = "1.8"
 ext.kdaVersion = "1.1.0"
 ext.apacheSparkVersion = '2.4.4'
-ext.jackson2Version = '2.6.7'
+ext.jackson2Version = '2.10.2'
 ext.sl4jVersion = "1.7.25"
 ext.awsJavaSDKVersion = "2.13.54"
 
@@ -25,11 +25,15 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
+
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     shadow "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
     shadow "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
     shadow "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+    shadow "org.apache.beam:beam-sdks-java-extensions-json-jackson:$apacheBeamVersion"
 
     shadow("org.apache.beam:beam-sdks-java-io-kinesis:$apacheBeamVersion") {
         exclude group: 'org.apacahe.beam.sdk.io.gcp.bigquery', module: 'BigQueryUtils'
@@ -37,12 +41,22 @@ dependencies {
     shadow "org.apache.beam:beam-sdks-java-io-amazon-web-services:$apacheBeamVersion"
 
     shadow "com.amazonaws:aws-kinesisanalytics-runtime:${kdaVersion}"
+    shadow "com.google.code.gson:gson:2.8.6"
+    shadow "software.amazon.awssdk:cloudwatch:$awsJavaSDKVersion"
+    shadow "software.amazon.awssdk:s3:$awsJavaSDKVersion"
+    shadow "com.opencsv:opencsv:4.6"
+    shadow "org.slf4j:slf4j-api:${sl4jVersion}"
+    shadow "org.slf4j:slf4j-jdk14:${sl4jVersion}"
+
+    shadow "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jackson2Version"
 
 
-
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
     compile "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
     compile "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+    compile "org.apache.beam:beam-sdks-java-extensions-json-jackson:$apacheBeamVersion"
+
     compile("org.apache.beam:beam-sdks-java-io-kinesis:$apacheBeamVersion") {
         exclude group: 'org.apacahe.beam.sdk.io.gcp.bigquery', module: 'BigQueryUtils'
     }
@@ -55,31 +69,44 @@ dependencies {
     compile "software.amazon.awssdk:s3:$awsJavaSDKVersion"
     compile "com.opencsv:opencsv:4.6"
     compile "org.slf4j:slf4j-api:${sl4jVersion}"
+    compile "org.slf4j:slf4j-jdk14:${sl4jVersion}"
+
+    compile "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jackson2Version"
 
 
     runtime "org.apache.beam:beam-sdks-java-core:$apacheBeamVersion"
     runtime "org.apache.beam:beam-runners-direct-java:$apacheBeamVersion"
     runtime "org.apache.beam:beam-runners-flink-${flinkVersion}:$apacheBeamVersion"
+    runtime "org.apache.beam:beam-sdks-java-extensions-json-jackson:$apacheBeamVersion"
+
+    runtime("org.apache.beam:beam-sdks-java-io-kinesis:$apacheBeamVersion") {
+        exclude group: 'org.apacahe.beam.sdk.io.gcp.bigquery', module: 'BigQueryUtils'
+    }
+    runtime "org.apache.beam:beam-sdks-java-io-amazon-web-services:$apacheBeamVersion"
+
+    runtime "com.amazonaws:aws-kinesisanalytics-runtime:${kdaVersion}"
+
+    runtime "com.google.code.gson:gson:2.8.6"
+    runtime "software.amazon.awssdk:cloudwatch:$awsJavaSDKVersion"
+    runtime "software.amazon.awssdk:s3:$awsJavaSDKVersion"
+    runtime "com.opencsv:opencsv:4.6"
+    runtime "org.slf4j:slf4j-api:${sl4jVersion}"
     runtime "org.slf4j:slf4j-jdk14:${sl4jVersion}"
 
-
-
-    runtime "org.slf4j:slf4j-api:1.+"
-    runtime "org.slf4j:slf4j-jdk14:1.+"
+    runtime "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jackson2Version"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'org.hamcrest:hamcrest:2.2'
 
 }
 
-/*configurations.all {
+configurations.all {
     resolutionStrategy {
-        force "com.google.guava:guava:16.0.1"
         force "com.fasterxml.jackson.core:jackson-core:$jackson2Version"
         force "com.fasterxml.jackson.core:jackson-databind:$jackson2Version"
         force "com.fasterxml.jackson.core:jackson-annotations:$jackson2Version"
     }
-}*/
+}
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
@@ -88,12 +115,12 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-mainClassName = 'samples.quickstart.WordCountKotlin'
+mainClassName = 'com.amazonaws.samples.beam.taxi.count.TaxiCount'
 
 shadowJar {
     mergeServiceFiles()
 
-    baseName = 'WordCount'  // Name of the fat jar file.
+    baseName = 'amazon-kinesis-analytics-beam-taxi-consumer'  // Name of the fat jar file.
     classifier = null       // Set to null, otherwise 'shadow' appends a '-all' to the jar file name.
     manifest {
         attributes('Main-Class': mainClassName)  // Specify where the main class resides.

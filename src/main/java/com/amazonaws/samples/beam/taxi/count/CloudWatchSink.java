@@ -18,6 +18,7 @@
 package com.amazonaws.samples.beam.taxi.count;
 
 import avro.shaded.com.google.common.collect.Iterables;
+import com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.KV;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class CloudWatchSink extends DoFn<KV<Void, Iterable<com.amazonaws.samples.beam.taxi.count.Metric>>, Void> {
+public class CloudWatchSink extends DoFn<KV<Void, Iterable<com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric>>, Void> {
   private static final Logger LOG = LoggerFactory.getLogger(CloudWatchSink.class);
 
   private final Dimension streamName;
@@ -50,7 +51,7 @@ public class CloudWatchSink extends DoFn<KV<Void, Iterable<com.amazonaws.samples
   public void process(ProcessContext c) {
     Collection<MetricDatum> metrics = StreamSupport
         .stream(c.element().getValue().spliterator(), true)
-        .map(new Function<com.amazonaws.samples.beam.taxi.count.Metric, MetricDatum>() {
+        .map(new Function<com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric, MetricDatum>() {
              @Override
              public MetricDatum apply(Metric metric) {
                Dimension[] dimensions;

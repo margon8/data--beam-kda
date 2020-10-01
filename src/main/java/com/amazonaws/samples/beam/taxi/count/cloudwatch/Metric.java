@@ -15,7 +15,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.amazonaws.samples.beam.taxi.count;
+package com.amazonaws.samples.beam.taxi.count.cloudwatch;
 
 import java.io.Serializable;
 import java.time.Instant;

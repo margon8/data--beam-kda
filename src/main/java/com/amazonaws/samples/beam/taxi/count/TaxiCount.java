@@ -17,6 +17,7 @@
 package com.amazonaws.samples.beam.taxi.count;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric;
 import com.amazonaws.samples.beam.taxi.count.kinesis.TripEvent;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import org.apache.beam.runners.flink.FlinkRunner;
@@ -117,11 +118,12 @@ public class TaxiCount {
           )
           .apply("Map to Metric", ParDo.of(
               new DoFn<Long, Metric>() {
-                @ProcessElement
-                public void process(DoFn.ProcessContext c) {
-                  Long l = (Long) c.element();
-                  c.output(new Metric(l.longValue(), c.timestamp()));
-                }
+                  @ProcessElement
+                  public void processElement(@Element Long l, OutputReceiver<Metric> out) {
+                  Instant ts = Instant.now();
+                  out.output(new Metric(l.longValue(),ts));
+                  }
+
               }
           ));
     } else {
@@ -129,18 +131,18 @@ public class TaxiCount {
           .apply("Partition by borough", ParDo.of(new PartitionByBorough()))
           .apply("Count per borough", Count.perKey())
           .apply("Map to Metric", ParDo.of(
-              new DoFn<KV<String, Long>, Metric>() {
-                @ProcessElement
-                public void process(DoFn.ProcessContext c) {
-                  KV<String,Long> kv = (KV<String,Long>) c.element();
-                  long count = kv.getValue();
-                  String borough = kv.getKey();
-                  Instant timestamp = c.timestamp();
+              new DoFn<KV<String,Long>, Metric>() {
+                  @ProcessElement
+                  public void processElement(@Element KV<String,Long> kv, OutputReceiver<Metric> out) {
+                      Instant ts = Instant.now();
+                      long count = kv.getValue();
+                      String borough = kv.getKey();
 
-                  LOG.debug("adding metric for borough {}", borough);
+                      LOG.debug("adding metric for borough {}", borough);
 
-                  c.output(new Metric(count, borough, timestamp));
-                }
+                      out.output(new Metric(count, borough, ts));
+                  }
+
               }
           ));
     }

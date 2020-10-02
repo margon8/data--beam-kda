@@ -14,16 +14,15 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.amazonaws.samples.beam.taxi.count;
+package com.amazonaws.samples.beam.taxi.count.batchborough;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.samples.beam.taxi.count.*;
 import com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric;
 import com.amazonaws.samples.beam.taxi.count.kinesis.TripEvent;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import org.apache.beam.runners.flink.FlinkRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
-import org.apache.beam.sdk.io.kinesis.KinesisIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.PipelineOptionsValidator;
 import org.apache.beam.sdk.transforms.*;
@@ -37,9 +36,9 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 
 
-public class TaxiCount {
+public class BatchS3TaxiCountSolution {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TaxiCount.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BatchS3TaxiCountSolution.class);
 
   public static void main(String[] args) {
     String[] kinesisArgs = TaxiCountOptions.argsFromKinesisApplicationProperties(args,"BeamApplicationProperties");
@@ -56,30 +55,8 @@ public class TaxiCount {
 
     LOG.info("Running pipeline with options: {}", options.toString());
 
-    int batchSize;
-    PCollection<TripEvent> input;
-
-    switch (options.getSource()) {
-      case "kinesis":
-        batchSize = 1;
-
-        input = p
-            .apply("Kinesis source", KinesisIO
-                .read()
-                .withStreamName(options.getInputStreamName())
-                .withAWSClientsProvider(new DefaultCredentialsProviderClientsProvider(Regions.fromName(options.getAwsRegion())))
-                .withInitialPositionInStream(InitialPositionInStream.LATEST)
-            )
-            .apply("Parse Kinesis events", ParDo.of(new EventParser.KinesisParser()));
-
-        LOG.info("Start consuming events from stream {}", options.getInputStreamName());
-
-        break;
-
-      case "s3":
-        batchSize = 20;
-
-        input = p
+    int batchSize = 20;
+    PCollection<TripEvent> input = p
             .apply("S3 source", TextIO
                 .read()
                 .from(options.getInputS3Pattern())
@@ -87,12 +64,6 @@ public class TaxiCount {
             .apply("Parse S3 events", ParDo.of(new EventParser.S3Parser()));
 
         LOG.info("Start consuming events from s3 bucket {}", options.getInputS3Pattern());
-
-        break;
-
-      default:
-        throw new IllegalArgumentException("expecting 'kinesis' or 's3' as parameter of 'inputSource'");
-    }
 
 
     PCollection<TripEvent> window = input
@@ -107,22 +78,10 @@ public class TaxiCount {
         );
 
 
-    PCollection<Metric> metrics;
-
-    if (! options.getOutputBoroughs()) {
-      metrics = window
-          .apply("Count globally", Combine
-              .globally(Count.<TripEvent>combineFn())
-              .withoutDefaults()
-          )
-          .apply("Map to Metric", ParDo.of(new MetricUtils.MetricCreator()));
-
-    } else {
-      metrics = window
-          .apply("Partition by borough", ParDo.of(new PartitionByBorough()))
-          .apply("Count per borough", Count.perKey())
-          .apply("Map to Metric", ParDo.of(new MetricUtils.MetricKVCreator()));
-    }
+    PCollection<Metric> metrics = window
+            .apply("Partition by borough", ParDo.of(new PartitionByBorough()))
+            .apply("Count per borough", Count.perKey())
+            .apply("Map to Metric", ParDo.of(new MetricUtils.MetricKVCreator()));
 
 
     String streamName = options.getInputStreamName()==null ? "Unknown" : options.getInputStreamName();

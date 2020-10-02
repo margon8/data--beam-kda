@@ -115,7 +115,7 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-mainClassName = 'com.amazonaws.samples.beam.taxi.count.TaxiCount'
+mainClassName = 'com.amazonaws.samples.beam.taxi.count.complete.TaxiCount'
 
 shadowJar {
     mergeServiceFiles()

@@ -1,6 +1,7 @@
-package com.amazonaws.samples.beam.taxi.count
+package com.amazonaws.samples.beam.taxi.count.com.amazonaws.samples.beam.taxi.count
 
 import com.amazonaws.regions.Regions
+import com.amazonaws.samples.beam.taxi.count.*
 import com.amazonaws.samples.beam.taxi.count.cloudwatch.Metric
 import com.amazonaws.samples.beam.taxi.count.kinesis.TripEvent
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream
@@ -13,13 +14,12 @@ import org.apache.beam.sdk.transforms.windowing.*
 import org.apache.beam.sdk.values.KV
 import org.apache.beam.sdk.values.PCollection
 import org.joda.time.Duration
-import org.joda.time.Instant
 import org.slf4j.LoggerFactory
 import software.amazon.awssdk.services.cloudwatch.model.Dimension
 
 object TaxiCountKotlin {
 
-    private val LOG = LoggerFactory.getLogger(TaxiCount::class.java)
+    private val LOG = LoggerFactory.getLogger(TaxiCountKotlin::class.java)
 
     @JvmStatic
     fun main(args: Array<String>) {

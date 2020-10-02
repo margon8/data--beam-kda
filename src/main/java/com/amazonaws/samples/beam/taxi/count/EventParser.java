@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import static com.amazonaws.samples.beam.taxi.count.kinesis.Event.parseEvent;
 
-gi
+public class EventParser {
+  private static final Logger LOG = LoggerFactory.getLogger(EventParser.class);
 
   public static class KinesisParser extends DoFn<KinesisRecord, TripEvent> {
     @ProcessElement

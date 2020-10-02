@@ -120,8 +120,11 @@ public class TaxiCount {
               new DoFn<Long, Metric>() {
                   @ProcessElement
                   public void processElement(@Element Long l, OutputReceiver<Metric> out) {
-                  Instant ts = Instant.now();
-                  out.output(new Metric(l.longValue(),ts));
+                      Instant ts = Instant.now();
+
+                      LOG.debug("adding metric for count {}");
+
+                      out.output(new Metric(l.longValue(),ts));
                   }
 
               }

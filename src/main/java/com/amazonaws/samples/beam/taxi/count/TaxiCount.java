@@ -32,7 +32,6 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.commons.lang3.ArrayUtils;
 import org.joda.time.Duration;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
@@ -116,38 +115,13 @@ public class TaxiCount {
               .globally(Count.<TripEvent>combineFn())
               .withoutDefaults()
           )
-          .apply("Map to Metric", ParDo.of(
-              new DoFn<Long, Metric>() {
-                  @ProcessElement
-                  public void processElement(@Element Long l, OutputReceiver<Metric> out) {
-                      Instant ts = Instant.now();
+          .apply("Map to Metric", ParDo.of(new MetricUtils.MetricCreator()));
 
-                      LOG.debug("adding metric for count {}");
-
-                      out.output(new Metric(l.longValue(),ts));
-                  }
-
-              }
-          ));
     } else {
       metrics = window
           .apply("Partition by borough", ParDo.of(new PartitionByBorough()))
           .apply("Count per borough", Count.perKey())
-          .apply("Map to Metric", ParDo.of(
-              new DoFn<KV<String,Long>, Metric>() {
-                  @ProcessElement
-                  public void processElement(@Element KV<String,Long> kv, OutputReceiver<Metric> out) {
-                      Instant ts = Instant.now();
-                      long count = kv.getValue();
-                      String borough = kv.getKey();
-
-                      LOG.debug("adding metric for borough {}", borough);
-
-                      out.output(new Metric(count, borough, ts));
-                  }
-
-              }
-          ));
+          .apply("Map to Metric", ParDo.of(new MetricUtils.MetricKVCreator()));
     }
 
 

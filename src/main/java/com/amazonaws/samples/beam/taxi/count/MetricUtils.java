@@ -16,7 +16,10 @@ public class MetricUtils {
         public void processElement(ProcessContext c) {
             long l = c.element().longValue();
              Instant ts = c.timestamp();
-             c.output(new Metric(l,ts));
+
+             LOG.debug("adding metric for count");
+
+            c.output(new Metric(l,ts));
         }
 
     }
@@ -25,11 +28,13 @@ public class MetricUtils {
 
         @ProcessElement
         public void processElement(ProcessContext c) {
-            Instant ts = Instant.now();
             long count = c.element().getValue();
             String borough = c.element().getKey();
 
             LOG.debug("adding metric for borough {}", borough);
+
+            //Instant ts = Instant.now();
+            Instant ts = c.timestamp();
 
             c.output(new Metric(count, borough, ts));
         }
